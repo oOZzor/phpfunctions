@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * 数据处理方法
@@ -68,14 +68,14 @@ function getArrayMin($arr, $field){
 
 
 /**
- * 参数字段对应
+ * 获取参数指定字段对应键值
  * @param $param
  * @param $key
  * @param mixed $default
  * @param bool $must
  * @param string $msg
  * @return string
- * @throws Exception
+ * @throws Exception 不存在对应键值则
  */
 function paramKey($param,$key,$default='',$must=true,$msg=' 无有效值'){
     $keys = explode('|',$key);
@@ -88,10 +88,17 @@ function paramKey($param,$key,$default='',$must=true,$msg=' 无有效值'){
     if($value==='' && $must) exception($keyName.$msg);
     return $value;
 }
+
 function paramHad($key,$param,$default='') {
     return paramKey($param,$key,$default,false);
 }
 
+/**
+ * 判断若是字符串则转数组 [确保提供数据是数组形式]
+ * @param $data
+ * @param string $delimiter
+ * @return array
+ */
 function to_array($data,$delimiter=','){
     if(is_array($data)) return $data;
     $arr = explode($delimiter,$data);
@@ -100,10 +107,24 @@ function to_array($data,$delimiter=','){
     }
     return $arr;
 }
+
+/**
+ * 判断是数组则转为字符串 [确保提供数据为字符串形式]
+ * @param $data
+ * @param string $glue
+ * @return string
+ */
 function to_string($data,$glue=','){
     if(!is_array($data)) return $data;
     return implode($glue,$data);
 }
+
+/**
+ * 特殊数组转字符串 [数据库原生语句 UNION ALL 查询]
+ * @param $data
+ * @param string $glue
+ * @return string
+ */
 function union_string($data,$glue='t'){
     if(!is_array($data)) return $data;
     $string = '';
@@ -111,18 +132,26 @@ function union_string($data,$glue='t'){
     foreach ($data as $k=>$datum) {
         $as = $glue.$k;
         $string .= ' SELECT * FROM ('.$datum.") $as" . ($k<$count? ' UNION ALL ' : '');
-//        $string .= str_replace('T1',$glue.$k,$datum) . ($k<$count? ' UNION ALL ' : '');
     }
     return $string;
 }
-//去除数组指定字段
+
+/**
+ * 去除数组指定字段
+ * @param $arr array 需处理数组
+ * @param $key string|array 指定字段
+ * @param bool $retain 是否保留原键名
+ * @return array|null
+ */
 function array_remove_key($arr,$key,$retain=false) {
     if(empty($arr) || !$key) return $arr;
     $data = [];
     foreach ($arr as $k=>$item) {
-        if(key_exists($key,$item)) {
-            unset($item[$key]);
-            continue;
+        foreach (to_array($key) as $k)
+        {
+            if(key_exists($k,$item)) {
+                unset($item[$k]);
+            }
         }
         $retain
             ? $data[$k] = $item
@@ -131,13 +160,26 @@ function array_remove_key($arr,$key,$retain=false) {
     $arr=null;unset($arr);
     return $data;
 }
-//$arr2 融入 $arr1 [根据配比键$key1,为$key2填充] $key1可为空
+
+/**
+ * $arr2 融入 $arr1 [根据配比键$key1,为$key2填充] $key1可为空
+ * @param array $arr1
+ * @param array $arr2
+ * @param string $key1
+ * @param string $key2
+ * @param string $default 无匹配数据填值
+ * @param string $method 可选，对匹配数据的外部方法处理引用
+ * @param array $param 配合$method 额外的方法参数
+ * @return array
+ */
 function array_assimilate($arr1,$arr2,$key1,$key2,$default='',$method='',$param=[]) {
     $data = [];
     foreach ($arr1 as $key=>$item) {
+        //数据融入匹配
         $item[$key2] = $key1
             ? (key_exists($item[$key1],$arr2)? $arr2[$item[$key1]] : $default)
             : (key_exists($key,$arr2)? $arr2[$key] : $default);
+        //外部方法处理引入
         if($method && $item[$key2]) {
             $item[$key2] = call_user_func_array($method,
                 $param
@@ -151,7 +193,15 @@ function array_assimilate($arr1,$arr2,$key1,$key2,$default='',$method='',$param=
     $arr2=null;unset($arr2);
     return $data;
 }
-//将数组根据指定健名值 重新分组 [remove是否去除指定原健名及值]
+
+/**
+ * 将数组根据指定健名值 重新分组【新增一个维度】
+ * @param array $arr
+ * @param string $key 根据此指定键名[在给定数组中对应键值存在重复出现]
+ * @param bool $remove 重分组数据是否去除用于参考分组的指定原健值对
+ * @param string|array $valKey 重新分组后的取值处理 引用外部处理方法|或带额外常量参数
+ * @return array
+ */
 function array_groupBy_key($arr,$key,$remove=false,$valKey='') {
     $data = [];
     foreach ($arr as $item) {
@@ -162,13 +212,14 @@ function array_groupBy_key($arr,$key,$remove=false,$valKey='') {
     $select=null;unset($select);
     return $data;
 }
+
 /**
  * 数组数据处理|提取
  * @param string $key 将数组的主键值替换为字段名为$key的值
  * @param array $oldArray 多维数组数据
  * @param string $value 配合$key值，提取出[$key]=>[$value]的新数组
  * @return array
- * @throws \Exception
+ * @throws \Exception tp5内置抛出异常的方法
  */
 function array_add_key($key,$oldArray,$value='')
 {   if(empty($oldArray)) return $oldArray;
@@ -182,7 +233,12 @@ function array_add_key($key,$oldArray,$value='')
     return array_combine(array_column($oldArray,$key),$valueArray);
 }
 
-//可选设值字段挑出
+/**
+ * 可选设值字段挑出
+ * @param array $param 给定参数组
+ * @param array $fields 提取数据键名数组
+ * @return array 返回$param中包含给定键名$fields【有则取，无则略】的键值对子集数组数据
+ */
 function may_data($param,$fields) {
     $data = [];
     foreach ($fields as $field) {
@@ -191,7 +247,12 @@ function may_data($param,$fields) {
     return $data;
 }
 
-
+/**
+ * 清空给定数据【缓存\数组指定键值对】
+ * @param array|string|object $obj
+ * @param string $key
+ * @return bool|null
+ */
 function null_unset($obj,$key=''){
     if(!$key) {
         $obj=NULL;unset($obj);return true;
@@ -246,7 +307,6 @@ function array2xml(array $arr) {
     return $xml;
 }
 
-
 /**
  * 判断参数是否不为空
  * @param $param
@@ -257,7 +317,6 @@ function array2xml(array $arr) {
 function isNotEmpty($param, $key){
     return isset($param[$key]) && !empty($param[$key]);
 }
-
 
 /**
  * stdClass转换成数组
@@ -271,6 +330,7 @@ function stdc2array($data) {
     }
     return $ret;
 }
+
 /**
  * 数组 转 对象
  *
