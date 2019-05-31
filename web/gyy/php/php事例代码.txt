@@ -1,0 +1,114 @@
+<?php
+
+define('URL', 'http://api.guanyierp.com/rest/erp_open');
+define('APPKEY', '140233');
+define('SESSIONKEY', 'ba0f24003ff04c9488bbe85eb3560f53');
+define('SECRET', 'd569dd0a1b1c404ca1d188277d209dfe');
+
+// getshops();
+// getWarehouses();
+addGoods();
+
+//获取店铺信息
+function getShops() {
+    $data = array();
+    $data['appkey'] = APPKEY;
+    $data['sessionkey'] = SESSIONKEY;
+    $data['method'] = 'gy.erp.shop.get';
+    $data['page_no'] = '1';
+    $data['page_size'] = '10';
+    // $data['code'] = '001';
+    $data['sign'] = sign($data, SECRET);
+    echo 'response: ' . mycurl(URL, $data);
+}
+
+//获取仓库信息
+function getWarehouses() {
+    $data = array();
+    $data['appkey'] = APPKEY;
+    $data['sessionkey'] = SESSIONKEY;
+    $data['method'] = 'gy.erp.warehouse.get';
+    $data['page_no'] = '1';
+    $data['page_size'] = '10';
+    // $data['code'] = '001';
+    $data['sign'] = sign($data, SECRET);
+    echo 'response: ' . mycurl(URL, $data);
+}
+
+//新增商品
+function addGoods() {
+    $data = array();
+    $data['appkey'] = APPKEY;
+    $data['sessionkey'] = SESSIONKEY;
+    $data['method'] = 'gy.erp.item.add';
+    $random_code = time(); //获取当前时间戳，以时间戳做商品代码可以防止重复，避免出错，此方式仅为测试
+    $data['code'] = $random_code;
+    $data['name'] = '测试商品';
+    $data['simple_name'] = '测试商品简称';
+    $data['weight'] = '124.00';
+    $skus = array();
+    $skus[] = array(
+        'sku_code' => $random_code . '011',
+        'sku_name' => '红色 S',
+        'sku_sales_price' => '12.00',
+        'sku_note' => ''
+    );
+    $skus[] = array(
+        'sku_code' => $random_code . '012',
+        'sku_name' => '红色 M',
+        'sku_sales_price' => '12.00',
+        'sku_note' => ''
+    );
+    $data['skus'] = $skus;
+    $data['sign'] = sign($data, SECRET);
+    echo 'response: ' . mycurl(URL, $data);
+}
+
+
+
+function mycurl($url, $data) {
+    $data_string = json_encode_ch($data);
+    echo 'request: ' . $data_string . "\n";
+    $data_string = urlencode($data_string);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type:text/json;charset=utf-8',
+        'Content-Length:' . strlen($data_string)
+    ));
+    $content = curl_exec($ch);
+    curl_close($ch);
+    return $content;
+}
+
+function sign($data, $secret) {
+    if (empty($data)) {
+        return "";
+    }
+    unset($data['sign']); //可选，具体看传参
+    $data = json_encode_ch($data);
+    $sign = strtoupper(md5($secret . $data . $secret));
+    return $sign;
+}
+
+function json_encode_ch($arr) {
+    return urldecode(json_encode(url_encode_arr($arr)));
+}
+
+function url_encode_arr($arr) {
+    if (is_array($arr)) {
+        foreach ($arr as $k => $v) {
+            $arr[$k] = url_encode_arr($v);
+        }
+    } elseif (!is_numeric($arr) && !is_bool($arr)) {
+        $arr = urlencode($arr);
+    }
+    return $arr;
+}
+
+?>
+
+
