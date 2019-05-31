@@ -44,30 +44,41 @@ function param_need($params,$need,$data='',$arr=true) {
     return $arr ? $data : $data[$key];
 }
 
+/**
+ * 替换|移除源数组$arr中的$rep指定的键名|数据
+ * @param array $arr
+ * @param array $rep [key1=>field1|'',key2=>field2|'',,,]
+ * @param bool $sort 是否保持源次序
+ * @return array
+ */
+function key_replace($arr,$rep,$sort=false) {
+    if($sort) {
+        $data = [];
+        foreach ($arr as $key=>$item) {
+            if(key_exists($key,$rep)) {
+                if($rep[$key]) $data[$rep[$key]] = $item;
+            } else {
+                $data[$key] = $item;
+            }
+        }
+        null_unset($arr);
+        null_unset($rep);
+        return $data;
+    } else {
+        foreach ($rep as $key=>$field) {
+            if(key_exists($key,$arr)) {
+                if($field) {
+                    $arr[$field] = $arr[$key];
+                }
+                unset($arr[$key]);
+            }
+        }
+        null_unset($rep);
+        return $arr;
+    }
+}
 
 //借助借助方法
-function paramKey($param,$key,$default='',$must=true,$msg=' 无有效值'){
-    $keys = explode('|',$key);
-    $key = $keys[0];
-    $keyName = count($keys)>1? $keys[1] : $key;
-    $msg = count($keys)>2? $keys[2] : $msg;
-    $value = key_exists($key,$param)
-        ? ($param[$key]!==''? $param[$key] : ($default!==''? $default : ''))
-        : ($default!==''? $default : '');
-    if($value==='' && $must) exception($keyName.$msg);
-    return $value;
-}
-function paramHad($key,$param,$default='') {
-    return paramKey($param,$key,$default,false);
-}
-function to_array($data,$delimiter=','){
-    if(is_array($data)) return $data;
-    $arr = explode($delimiter,$data);
-    foreach($arr as $k=>$v){
-        $arr[$k] = is_array($v)? $v : trim($v);
-    }
-    return $arr;
-}
 
 /**
  * 判断是否为整数数据

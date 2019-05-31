@@ -248,6 +248,22 @@ function may_data($param,$fields) {
 }
 
 /**
+ * 提取指定键名得键值对组数据
+ * @param array $param
+ * @param array $fields [key1,key2=>field2,key3,,,]
+ * @return array
+ */
+function extract_data($param,$fields) {
+    $data = [];
+    foreach ($fields as $key=>$field) {
+        $key = be_int($key)? $field : $key;
+        if(key_exists($key,$param)) $data[$field] = $param[$key];
+    }
+    return $data;
+}
+
+
+/**
  * 清空给定数据【缓存\数组指定键值对】
  * @param array|string|object $obj
  * @param string $key
