@@ -28,11 +28,11 @@ function param_data($params,$need) {
  * 从给到的[Array]$params中根据[Array]$need参数获取需要的数据
  * @param array $params
  * @param array|string $need
- * @param string $data
+ * @param array $data
  * @param bool $arr
  * @return string|array
  */
-function param_need($params,$need,$data='',$arr=true) {
+function param_need($params,$need,$data=[],$arr=true) {
     list($key,$default) = to_list($need);
     if(!is_array($default)) {
         $data[$key] = paramHad($key,$params,$default);
