@@ -137,7 +137,7 @@ function union_string($data,$glue='t'){
 }
 
 /**
- * 去除数组指定字段
+ * 去除二维数组指定字段
  * @param $arr array 需处理数组
  * @param $key string|array 指定字段
  * @param bool $retain 是否保留原键名
@@ -161,6 +161,20 @@ function array_remove_key($arr,$key,$retain=false) {
     return $data;
 }
 
+/**
+ * 去处数组中指定的键值的数据
+ * @param $arr
+ * @param $keys
+ * @return mixed
+ */
+function array_move_keys($arr,$keys) {
+    if(empty($arr) || !$keys) return $arr;
+    foreach ($keys as $key) {
+        if(key_exists($key,$arr))
+            unset($arr[$key]);
+    }
+    return $arr;
+}
 /**
  * $arr2 融入 $arr1 [根据配比键$key1,为$key2填充] $key1可为空
  * @param array $arr1
