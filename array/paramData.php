@@ -33,7 +33,7 @@ function param_data($params,$need) {
  * @return string|array
  */
 function param_need($params,$need,$data=[],$arr=true) {
-    list($key,$default) = to_list($need);
+    list($key,$default) = kv_to_list($need);
     if(!is_array($default)) {
         $data[$key] = paramHad($key,$params,$default);
     } else {
@@ -98,7 +98,7 @@ function be_int($age) {
  * @param $data
  * @return array
  */
-function to_list($data) {
+function kv_to_list($data) {
     $get = $data;
     $data = to_array($data);
     $list = [];

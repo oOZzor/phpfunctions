@@ -68,32 +68,6 @@ function getArrayMin($arr, $field){
 
 
 /**
- * 获取参数指定字段对应键值
- * @param $param
- * @param $key
- * @param mixed $default
- * @param bool $must
- * @param string $msg
- * @return string
- * @throws Exception 不存在对应键值则
- */
-function paramKey($param,$key,$default='',$must=true,$msg=' 无有效值'){
-    $keys = explode('|',$key);
-    $key = $keys[0];
-    $keyName = count($keys)>1? $keys[1] : $key;
-    $msg = count($keys)>2? $keys[2] : $msg;
-    $value = key_exists($key,$param)
-        ? ($param[$key]!==''? $param[$key] : ($default!==''? $default : ''))
-        : ($default!==''? $default : '');
-    if($value==='' && $must) exception($keyName.$msg);
-    return $value;
-}
-
-function paramHad($key,$param,$default='') {
-    return paramKey($param,$key,$default,false);
-}
-
-/**
  * 判断若是字符串则转数组 [确保提供数据是数组形式]
  * @param $data
  * @param string $delimiter
