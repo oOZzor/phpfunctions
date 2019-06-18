@@ -80,3 +80,32 @@ function data2list($data,$cacheName='',$key=['value','name']) {
     null_unset($data);
     return $list;
 }
+
+/**
+ * 多层数据转选项|并缓存
+ * @param $data
+ * @param string $cacheName 'name' | 'name|time'
+ * @param array $field
+ * @return array
+ */
+function tree2list($data,$cacheName='',$field=['option','children']) {
+    $list = $cacheName? cache($cacheName) : [];
+    if(empty($list)) {
+        if(!empty($data) && is_array($data)) {
+            list($k1,$k2) = $field;
+            foreach ($data as $key=>$datum) {
+                if($key==$k1) {
+                    if(key_exists($k2,$datum)) {
+                        $datum = tree2list($datum,'',$field);
+                    } else {
+                        $datum = data2list($datum);
+                    }
+                }
+                $list[$key] = $datum;
+            }
+            if($cacheName) cache($cacheName,$list,3600);
+        }
+    }
+    null_unset($data);
+    return $list;
+}

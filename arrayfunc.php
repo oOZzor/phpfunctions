@@ -149,6 +149,24 @@ function array_move_keys($arr,$keys) {
     }
     return $arr;
 }
+
+/**
+ * 去处数组中指定的值的数据
+ * @param $arr
+ * @param $keys
+ * @return mixed
+ */
+function array_move_values($arr,$keys) {
+    if(empty($arr) || !$keys) return $arr;
+    foreach ($keys as $k => $key) {
+        foreach($arr as $i => $value){
+            if($key == $value){
+                unset($arr[$i]);
+            }
+        }
+    }
+    return $arr;
+}
 /**
  * $arr2 融入 $arr1 [根据配比键$key1,为$key2填充] $key1可为空
  * @param array $arr1
