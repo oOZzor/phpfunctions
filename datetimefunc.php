@@ -31,6 +31,12 @@ function get_yesterday($date='')
     return date("Y-m-d",strtotime("- 1 days",strtotime($date)));
 }
 
+function get_tomorrow($date='')
+{
+    if(!$date) return date("Y-m-d",strtotime("+1 days",time()));
+
+    return date("Y-m-d",strtotime("+1 days",strtotime(date('Y-m-d',strtotime($date)))));
+}
 
 /**
  * 获取当前时间
@@ -38,6 +44,12 @@ function get_yesterday($date='')
  */
 function now() {
     return date('Y-m-d H:i:s');
+}
+
+
+function zero_tomorrow()
+{
+    return strtotime(date('Y-m-d',strtotime('+1 day')));
 }
 
 
